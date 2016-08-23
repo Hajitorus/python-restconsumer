@@ -37,11 +37,11 @@ class RestConsumer(object):
         return json.loads(r.content)
 
 
-Twitter = RestConsumer(base_url='https://api.twitter.com/1',append_json=True)
-Github = RestConsumer(base_url='https://api.github.com')
-Stackoverflow = RestConsumer(base_url='http://api.stackoverflow.com/1.1')
-
 if __name__=='__main__':
+    Twitter = RestConsumer(base_url='https://api.twitter.com/1',append_json=True)
+    Github = RestConsumer(base_url='https://api.github.com')
+    Stackoverflow = RestConsumer(base_url='http://api.stackoverflow.com/1.1')
+
     from pprint import pprint
     t = RestConsumer(base_url='https://api.twitter.com/1',append_json=True)
     public_timeline = t.statuses.public_timeline()
