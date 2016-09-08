@@ -1,40 +1,52 @@
-import requests, json
+import requests
+# from functools import lru_cache
+
 
 def append_to_url(base_url, param):
-    return "%s%s/" % (base_url, param)
+    return base_url + param + "/"
 
 
 class RestConsumer(object):
 
-    def __init__(self, base_url, append_json=False, append_slash=False):
-        self.base_url = base_url if base_url[-1] == '/' else "%s%s" % (base_url,"/")
+    def __init__(self, base_url, append_slash=False, append_json=False, **kwargs):
+        self.base_url = base_url
+        if not self.base_url.endswith('/') and append_slash:
+            self.base_url = self.base_url + '/'
         self.append_json = append_json
         self.append_slash = append_slash
+        self.kwargs = kwargs
 
     def __getattr__(self, key):
         new_base = append_to_url(self.base_url, key)
         return self.__class__(base_url=new_base,
                               append_json=self.append_json,
-                              append_slash=self.append_slash)
+                              append_slash=self.append_slash,
+                              **self.kwargs)
     
     def __getitem__(self, key):
         return self.__getattr__(key)
 
     def __call__(self, **kwargs):
-        if not self.append_slash:
-            self.base_url = self.base_url[:-1]
         if self.append_json:
-            self.base_url = "%s%s" % (self.base_url,'.json')
-        print "Calling %s" % self.base_url
+            self.base_url = self.base_url + '.json'
+        kwargs.update(self.kwargs)
         return self.get(self.base_url, **kwargs)
 
+    # @lru_cache()
     def get(self, url, **kwargs):
-        r = requests.get(url, **kwargs)
-        return json.loads(r.content)
+        return requests.get(url, **kwargs)
 
     def post(self, **kwargs):
-        r = requests.post(**kwargs)
-        return json.loads(r.content)
+        return requests.post(**kwargs)
+
+    def cache_info(self):
+        return self.get.cache_info()
+
+
+# DONE: get auth munged in there somehow
+# DONE: pass any requests-recognised kwargs in to __init__ or __call__
+# DONE? probably maybe cache this stuff?!
+# TODO: maybe fix append_slash semantics?
 
 
 if __name__=='__main__':
